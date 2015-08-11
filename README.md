@@ -1,17 +1,25 @@
-![screenshot](https://raw.githubusercontent.com/kablamo/slides-2014-ddg-intro-to-moo/master/intro-to-moo.screenshot.png)
+# Writing tests in Perl
+## The Perl test ecosystem
 
-# Introduction to Moo
+How to write tests in Perl.  Topics include:
 
-How to do OO with Moo in Perl.  Topics include:
-
-- Why Moo
-- Moo vs Moose
-- Object construction
-- Object destruction
-- Attributes
-- Method modifiers
-- Roles
-- Best practices
+ - Prove
+ - Test directory layout
+ - Test::More
+ - TAP
+ - Test::Differences
+ - Test::Deep
+ - Test::Fatal
+ - Test::Warnings
+ - Test::Lib
+ - Test::Cmd
+ - Test::DescribeMe
+ - Plack::Test
+ - Devel::Cover
+ - Test::Most
+ - Test::Modern
+ - Test::Pretty
+ - Other test modules
 
 To view the slides visit:
-http://kablamo.org/slides-2014-ddg-intro-to-moo
+http://kablamo.org/slides-perl-testing
