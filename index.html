@@ -30,7 +30,8 @@
 
 
         <section>
-          <h2>Writing tests in Perl</h2>
+          <h2>The Perl test ecosystem</h2>
+          <h4>How to write tests in Perl</h4>
           <p>
             <small><a href="http://kablamo.org">Eric Johnson</a> / <a href="http://twitter.com/kablamo_">@kablamo_</a></small>
           </p>
@@ -664,18 +665,8 @@ warn $@->error if $a;
 
         <section>
           <h2>Exceptions as objects</h2>
-          <p class="fragment">Using Try::Tiny </p>
-          <pre><code contenteditable class="fragment perl">
-try {
-    die My::Exception->new(
-        error    => 'Something bad happened',
-        request  => $request,
-        response => $response,
-    );
-}
-catch { warn $@->error };
-          </code></pre>
-          <pre><code contenteditable class="fragment perl">
+          <p>Using Try::Tiny </p>
+          <pre><code contenteditable class="perl">
 try {
     My::Exception->throw(
         error    => 'Something bad happened',
@@ -683,7 +674,9 @@ try {
         response => $response,
     );
 }
-catch { warn $@->error };
+catch {
+    warn $_->error;
+};
           </code></pre>
         </section>
 
@@ -742,12 +735,16 @@ lives_ok { $obj->method } 'expecting to live';
         <section>
           <h2>Test::Warnings</h2>
           <pre><code contenteditable class="fragment perl">
+use Test::More;
+use Test::Warnings;
 like 
     warning { $obj->method() },
     qr/BEEP/,
     'got a warning from method()';
           </code></pre>
           <pre><code contenteditable class="fragment perl">
+use Test::More;
+use Test::Warnings;
 is_deeply
     [ warnings { $obj->method() } ],
     [ 
@@ -757,6 +754,9 @@ is_deeply
     'got 2 warnings from method()';
           </code></pre>
           <pre><code contenteditable class="fragment perl">
+use Test::More;
+use Test::Warnings;
+use Test::Deep;
 cmp_deeply
     [ warnings { $obj->method() } ],
     bag(
@@ -859,15 +859,19 @@ use t::Private::Test::Library;
         <section>
           <h2>Test::Cmd</h2>
           <pre><code contenteditable class="perl">
-use Test::Cmd;
 use Test::More;
+use Test::Cmd;
  
-my $test = Test::Cmd->new( 
-    prog    => '/bin/ls',
-    workdir => ''
-);
+my $test = Test::Cmd->new(prog => '/bin/ls', workdir => '');
+
+# ls -l /var/log
 $test->run(args => '-l /var/log');
- 
+is $test->stdout, $expected_stdout, 'standard out';
+is $test->stderr, $expected_stderr, 'standard error';
+is $? >> 8,       1,                'exit status';
+
+# ls -a
+$test->run(args => '-a');
 is $test->stdout, $expected_stdout, 'standard out';
 is $test->stderr, $expected_stderr, 'standard error';
 is $? >> 8,       1,                'exit status';
@@ -1351,6 +1355,8 @@ prove -Pretty t
             <li class="fragment">Test::Fixme</li>
             <li class="fragment">Test::NoTabs</li>
             <li class="fragment">Test::Version</li>
+            <li class="fragment">Test::Pod</li>
+            <li class="fragment">Test::Pod::Coverage</li>
             <li class="fragment">Test::Synopsis</li>
             <li class="fragment">Test::Vars</li>
             <li class="fragment">Test::LoadAllModules</li>
