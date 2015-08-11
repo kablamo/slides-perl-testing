@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>How to Moo</title>
+    <title>Writing tests in Perl</title>
     <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
     <meta name="author" content="Hakim El Hattab">
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -30,8 +30,7 @@
 
 
         <section>
-          <h1>Introduction<br>to Moo</h1>
-          <h3>Perl objects with Moo</h3>
+          <h2>Writing tests in Perl</h2>
           <p>
             <small><a href="http://kablamo.org">Eric Johnson</a> / <a href="http://twitter.com/kablamo_">@kablamo_</a></small>
           </p>
@@ -39,677 +38,1347 @@
 
 
         <section>
-          <h2>About Moo</h2>
-          <ul>
-            <li class="fragment">OO sugar</li>
-            <li class="fragment">Extensible - see MooX:: on MetaCPAN</li>
-            <li class="fragment">Community approved - used in 698 CPAN modules</li>
-            <li class="fragment">Created by Matt Trout (MST), first release in 2010</li>
-            <li class="fragment">(Moose is used in 2320 CPAN modules)</li>
-            <li class="fragment">(Moose was created by Stevan Little, first release in 2006)</li>
-          </ul>
-        </section>
-
-
-        <section>
-          <h2>Why Moo</h2>
-          <ul>
-            <li class="fragment">Matt liked Moose, but</li>
-            <li class="fragment">Sometimes people refuse to use Moose</li>
-            <ol>
-              <li class="fragment">XS dependencies</li>
-              <li class="fragment">Slow startup time</li>
-              <li class="fragment">Some people are afraid of dependencies</li>
-            </ol>
-            <li class="fragment">Matt wanted an object system for all the places where Moose would not go</li>
-          </ul>
-        </section>
-
-
-        <section>
-          <h2>Moo features</h2>
+          <h2>Topics</h2>
           <ol>
-            <li class="fragment">Moo is pure Perl (no XS)</li>
-            <li class="fragment">Moo has a fast startup time</li>
-            <li class="fragment">Moo has about 9 dependencies</li>
-            <li class="fragment">Moo is compatible with Moose (and Mouse)</li>
-            <ul>
-              <li class="fragment">Compatible syntax</li>
-              <li class="fragment">Moo objects work with Moose roles</li>
-              <li class="fragment">Moose objects work with Moo roles</li>
-              <li class="fragment">If you need introspection, Moo can inflate to Moose</li>
-            </ul>
+            <li style="color: greenyellow">Prove</li>
+            <li style="color: white">Test directory layout</li>
+            <li style="color: white">Test::More</li>
+            <li style="color: white">TAP</li>
+            <li style="color: white">Test::Differences</li>
+            <li style="color: white">Test::Deep</li>
+            <li style="color: white">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
           </ol>
         </section>
 
 
         <section>
-          <h2>Moo classes</h2>
-          <ul>
-            <li>Moo classes have</li>
-            <ul>
-              <li>Constructor/destructor</li>
-              <li>Attributes</li>
-              <li>Methods</li>
-              <li>Method modifiers</li>
-              <li style="text-decoration:line-through">Introspection</li>
-            </ul>
-            <li>Moo classes do roles</li>
+          <h2>Prove</h2>
+          <p>prove is a tool for running Perl tests<p>
+          <pre class="fragment"><code class="bash" contenteditable>
+prove  # runs tests in 't' and 'xt' directories
+          </code></pre>
+          <pre class="fragment"><code class="bash" contenteditable>
+prove t  # runs tests in 't' directory
+          </code></pre>
+          <pre class="fragment"><code class="bash" contenteditable>
+prove t/cowboy t/alien
+          </code></pre>
+          <pre class="fragment"><code class="bash" contenteditable>
+prove -r t/cowboy t/alien # recursive
+          </code></pre>
+          <pre class="fragment"><code class="bash" contenteditable>
+prove -lvr # with the 'lib' dir, verbose, recursive
+          </code></pre>
+          <pre class="fragment"><code class="bash" contenteditable>
+prove          \
+  --lib        \ # add 'lib' dir to your $PERL5LIB
+  --verbose    \ # more output
+  --recurse    \ # run tests in the t dir recursively
+  -Pretty      \ # use the prove plugin App::Prove::Plugin::retty
+  --jobs 10    \ # run tests in parallel
+  --state=slow   # run slowest tests first
+          </code></pre>
           </ul>
         </section>
 
 
         <section>
-          <h2>use Moo</h2>
-          <pre><code contenteditable>
-use Moo;
-          </code></pre>
-          <p>is equivalent to</p>
-          <pre><code contenteditable>
-use strict;                   # strict vars, refs, subs
-use warnings;                 # in Moo v2+
-no indirect;                  # can't do `my $alien = new Alien;`
-no multidimensional;          # can't do `$hash{1,2}`
-no bareword::filehandles;     # can't do `open FH, $filename`
-use base 'Moo::Object';       # provides new(), etc
-          </code></pre>
-          <p>also <code>use Moo</code> imports some methods: </p>
-          <p>extends(), with(), has(), before(), around(), and after()</p>
-        </section>
-
-        <section>
-          <h2>Don't use namespace::autoclean</h2>
-          <p>It inflates your Moo class to a Moose class</p>
+          <h2>Prove states</h2>
+          <ul>
+            <li style="color: green"       class="fragment"><b>slow:</b> tests that are slow run first</li>
+            <li style="color: green"       class="fragment"><b>fast:</b> tests that are fast run first</li>
+            <li style="color: greenyellow" class="fragment"><b>failed:</b> only run tests that failed the last run</li>
+            <li style="color: greenyellow" class="fragment"><b>passed:</b> only run tests that passed the last run</li>
+            <li style="color: greenyellow" class="fragment"><b>hot:</b> tests that fail frequently run first</li>
+            <li style="color: yellow"      class="fragment"><b>new:</b> newest tests based on modification time run first</li>
+            <li style="color: yellow"      class="fragment"><b>old:</b> oldest tests based on modification time run first</li>
+            <li style="color: yellow"      class="fragment"><b>fresh:</b> only run tests modified since the last run</li>
+            <li style="color: orange"      class="fragment"><b>save:</b> save test info to .prove in the cwd</li>
+          <ul>
         </section>
 
 
         <section>
-          <h2>Object construction</h2>
-          <p>&nbsp;</p>
-          <p><code>my $alien = Alien->new(@args)</code></p>
-          <p>&nbsp;</p>
+          <h2>.proverc</h2>
+          <p>save your options in your ~/.proverc</p>
+          <pre><code class="bash" contenteditable>
+--lib         # add 'lib' dir to your $PERL5LIB
+--verbose     #
+--recurse     # run tests in the t dir recursively
+--state=save  # save test info to .prove in the cwd
+-Pretty       # use the prove plugin App::Prove::Plugin::retty
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
           <ol>
-            <li class="fragment"><code>new()</code> calls <code>Alien->BUILDARGS(@args)</code></li>
-            <li class="fragment"><code>new()</code> instantiates object, creating <code>$self</code></li>
-            <li class="fragment"><code>new()</code> calls <code>BUILD($self)</code></li>
-            <li class="fragment"><code>new()</code> returns <code>$self</code></li>
+            <li style="color: green">Prove</li>
+            <li style="color: greenyellow">Test directory layout</li>
+            <li style="color: white">Test::More</li>
+            <li style="color: white">TAP</li>
+            <li style="color: white">Test::Differences</li>
+            <li style="color: white">Test::Deep</li>
+            <li style="color: white">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
           </ol>
         </section>
 
 
         <section>
-          <h2>BUILDARGS</h2>
-          <p>is called <i>before</i> instantiation</p>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
-
-sub BUILDARGS {
-    my ($class, @args) = @_;
-   
-    # -- modify @args here --
-   
-    return { @args };
-}
+          <h2>Test directory layout</h2>
+          <pre><code class="bash" contenteditable>
+t
+├── 00_compile.t        # this test runs first
+├── data                # dir for test data
+│   ├── alien.json
+│   └── cowboy.json
+├── lib                 # dir for test libraries
+│   └── t
+│       └── Helper.pm   # t::Helper
+├── Transmogrifier
+│   ├── In
+│   │   └── Tiger.t     # unit tests for Transmogrifier::In::Tiger
+│   └── Out
+│       ├── Alien.t     # unit tests for Transmogrifier::Out::Alien
+│       └── Cowboy.t    # unit tests for Transmogrifier::Out::Cowboy
+└── Transmogrifier.t    # integration tests for Transmogrifier.pm
+xt                      # extra tests are run only during a release
+├── reallyslow.t
+└── slow.t
           </code></pre>
-          <p class="fragment">In Moose you need to call SUPER at the end</p>
-        </section>
-
-
-        <section>
-          <h2>BUILD</h2>
-          <p>is called <i>after</i> instantiation</p>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
-
-sub BUILD {
-    my ($self, $args) = @_;
-   
-    # -- additional validation or logging here --
-}
-          </code></pre>
-          <p class="fragment">The return value is ignored</p>
-        </section>
-
-
-        <section>
-          <h2>Best practice</h2>
-          
           <ul>
-            <li class="fragment">Validation and logging are fine in BUILDARGS or BUILD</li>
-            <li class="fragment">Don't do work in BUILDARGS or BUILD</li>
-            <ul>
-              <li class="fragment">It slows down object construction</li>
-              <li class="fragment">It violates the Principle of Least Astonishment.  Users expect <code>new()</code> to just create an object.</li>
-            </ul>
+            <li class="fragment">prove runs tests in alphabetical order by default</li>
+            <li class="fragment">prove only runs .t files</li>
+            <li class="fragment">layout of .t files mirrors organization of .pm files</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>DEMOLISH</h2>
-          <p>is called when the object is destroyed</p>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
-
-sub DEMOLISH {
-    my ($self, $in_global_destruction) = @_;
-   
-    $self->dbh->disconnect;
-}
-          </code></pre>
-        </section>
-
-
-        <section>
-          <h2>Object destruction</h2>
+          <h2>Topics</h2>
           <ol>
-            <li class="fragment"><code>my $alien = Alien->new(@args)</code></li>
-            <li class="fragment">Moo creates <code>$alien->DESTROY()</code></li>
-            <li class="fragment"><code>undef $alien</code></li>
-            <li class="fragment">Perl calls <code>$alien->DESTROY()</code></li>
-            <li class="fragment"><code>$alien->DESTROY()</code> calls <code>$alien->DEMOLISH()</code> at every level of inheritance</li>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: greenyellow">Test::More</li>
+            <li style="color: white">TAP</li>
+            <li style="color: white">Test::Differences</li>
+            <li style="color: white">Test::Deep</li>
+            <li style="color: white">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
           </ol>
         </section>
 
 
         <section>
-          <h2>Attributes</h2>
+          <h2>Test::More</h2>
+          <pre><code class="perl" contenteditable class="fragment">
+ok( $got, $test_name);
+ok(!$got, $test_name);
+
+is  ($got, $expected, $test_name);
+isnt($got, $expected, $test_name);
+
+like  ($got, qr/expected/, $test_name);
+unlike($got, qr/expected/, $test_name);
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+is_deeply($got_complex_thing, $expected_complex_thing, $test_name);
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+isa_ok($object, $class);
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+# rare, but used for complex logic: 
+# eg, if I get to this place, pass()
+pass "this test will always pass";
+fail "this test will always fail";
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+# Used to make sure you meant to stop testing here and
+# didn't exit/return/die and skip the rest of your tests.
+done_testing();
+          </code></pre>
         </section>
 
 
         <section>
-          <h2>Read only vs read/write</h2>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
+          <h2>Test::More</h2>
+          <pre><code contenteditable class="fragment perl">
+SKIP: {
+    skip $why, $how_many unless $have_some_feature;
 
-has eyes      => (is => 'rw');
-has nostrils  => (is => 'ro');
+    ok   $got1,                $test_name1;
+    is   $got2, $expected,     $test_name2;
+    like $got3, qr/$expected/, $test_name3;
+};
           </code></pre>
-          <pre><code contenteditable>
-my $alien = Alien->new( nostrils => 20 );
-$alien->eyes(10);     # succeeds
-$alien->nostrils(10); # dies
+          <pre><code contenteditable class="fragment perl">
+$ prove t/tiger.t
+t/tiger.t .. 
+ok 1 - created a tiger
+ok 2 - tiger has sharp teeth
+ok 3 - tiger has stripes
+ok 4 # skip third party tests
+ok 5 # skip third party tests
+ok 6 # skip third party tests
+1..6
+ok
+All tests successful.
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Best practice</h2>
+          <h2>Test::More</h2>
+          <pre><code contenteditable class="fragment perl">
+use Test::More skip_all => 'third party tests';
+
+# ...test code here...
+
+done_testing;
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+$ prove t/tiger.t
+t/tiger.t .. 
+ok 1 - created a tiger
+ok 2 - tiger has sharp teeth
+ok 3 - tiger has stripes
+ok 4 # skip third party tests
+ok 5 # skip third party tests
+ok 6 # skip third party tests
+1..6
+ok
+All tests successful.
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Test::More</h2>
+          <pre><code contenteditable class="fragment perl">
+TODO: {
+    local $TODO = $why;
+
+    is $got, $expected, $test_name;
+};
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+$ prove t/tiger.t
+t/tiger.t .. 
+ok 1 - created a tiger
+ok 2 - tiger has sharp teeth
+ok 3 - tiger has stripes
+not ok 4 - the tiger ate # TODO third party tests
+
+#   Failed (TODO) test 'the tiger ate'
+#   at t/Transmogrifier/In/Tiger.t line 18.
+#          got: 'not implemented yet at /home/eric/code/slides-testing-in-perl/src/lib/Transmogrifier/In/Tiger.pm line 9.
+# '
+#     expected: undef
+1..4
+ok
+All tests successful.
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Subtests</h2>
+          <p>Subtests are really useful and are highly recommended</p>
+          <pre><code contenteditable class="fragment perl">
+subtest $name => sub {
+    ok $got1,            $test_name1;
+    is $got2, $expected, $test_name2;
+    is $got3, $expected, $test_name3;
+};
+          </code></pre>
           <ul>
-            <li class="fragment">Making attributes mutable means more complexity in your code</li>
-            <li class="fragment">Start with <code>ro</code> attributes</li>
-            <li class="fragment">Convert attributes to <code>rw</code> when you need that</li>
+            <li class="fragment">Subtests are an organizational tool</li>
+            <li class="fragment">Subtests help prevent global variables</li>
+            <li class="fragment">We don't want 1000 line .t files for the same reason<br>we don't want 1000 line functions</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>Default vs builders</h2>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
-
-has eyes     => (is => 'ro', default => sub { 5 });
-has nostrils => (is => 'ro', builder => '_build_nostrils');
-
-# Perlism: methods that start with _ are private
-sub _build_nostrils { 5 }
-          </code></pre>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: greenyellow">TAP</li>
+            <li style="color: white">Test::Differences</li>
+            <li style="color: white">Test::Deep</li>
+            <li style="color: white">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
         </section>
 
 
         <section>
-          <h2>Best practice</h2>
+          <h2>TAP</h2>
+          <p class="fragment">Test Anything Protocol</p>
+          <p class="fragment">TAP is the stuff your tests output</p>
+        </section>
+
+        
+        <section>
+          <h2>TAP Syntax</h2>
+          <pre><code contenteditable class="bash">
+# comic book noises test sequence commencing
+# (this line and line before are ignored by the tap parser)
+ok 1 - zap()
+not ok 2 - bam()
+#   Failed test 'bam()'
+#   at xt/slow.t line 6.
+not ok 3 - pow() # TODO not implemented yet
+#   Failed (TODO) test 'pow()'
+#   at xt/slow.t line 10.
+ok 4 # skip because ComicBook::Noises::Batman is not installed
+yargle blargle (this line is ignore by the tap parser)
+ok 5 - kaboom()
+1..5
+          </code></pre>
           <ul>
-            <li class="fragment">Use default for very simple defaults</li>
-            <li class="fragment">Use builder for everything else</li>
-            <ul>
-              <li class="fragment">Builders can be overridden and method modified</li>
-              <li class="fragment">Roles can require builders</li>
-            </ul>
-            <li class="fragment">Builders should be private</li>
+            <li class="fragment">Any output not recognizable as TAP is ignored</li>
+            <li class="fragment">Any commented output is ignored</li>
+            <li class="fragment">Parser counts test failures and successes</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>Lazy attributes</h2>
-          <pre><code contenteditable>
-has tentacles => (is => 'lazy');
-          </code></pre>
-          <p>is equivalent to</p>
-          <pre><code contenteditable>
-has tentacles => (is => 'ro', lazy => 1, builder => '_build_tentacles');
-          </code></pre>
-        </section>
-
-        <section>
-          <h2>Moo vs Moose</h2>
-          <p>Use MooseX::AttributeShortcuts to get support for <code>is => 'lazy'</code> in Moose</p>
-        </section>
-
-
-        <section>
-          <h2>Best practice</h2>
+          <h2>TAP workflow</h2>
           <ul>
-            <li class="fragment">Lazy attributes are the best - use them as often as you can</li>
-            <li class="fragment">Because defaults are generated during object construction which slows down construction</li>
-            <li class="fragment">The user might not need that attribute so why waste time setting a default</li>
+            <li class="fragment">Your test produces TAP output</li>
+            <li class="fragment">prove is a small wrapper around TAP::Harness</li>
+            <li class="fragment">TAP::Harness parses TAP output and calculates a summary</li>
+            <li class="fragment">So when you run prove, you are both producing TAP and consuming TAP</li>
+            <li class="fragment">Continuous integration systems might also consume TAP output</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>Attribute initialization order</h2>
-          <p>is unpredictable</p>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
-use Tentacle;
+          <h2>TAP recommendations</h2>
+          <ul>
+            <li class="fragment">Don't print messages because this can cause TAP parsing to fail</li>
+            <li class="fragment">If you do print messages, start them with #</li>
+            <li class="fragment">Or use note(), diag(), explain() which add # in front for you</li>
+          </ul>
+          <pre><code contenteditable class="fragment perl">
+note "here is a note";         # only displayed in verbose output
+diag "here's what went wrong"; # always displayed
+explain \%foo;                 # dump a data structure
+          </code></pre>
+        </section>
 
-has tentacle_count => (is => 'ro', default => sub { 5 });
-has tentacles      => (is => 'ro', builder => '_build_tentacles');
 
-sub _build_tentacles { 
-  my $self = shift;
-  my @tentacles;
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: greenyellow">Test::Differences</li>
+            <li style="color: white">Test::Deep</li>
+            <li style="color: white">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
 
-  push @tentacles, Tentacle->new() for (1..$self->tentacle_count);
 
-  return \@tentacles;
+        <section>
+          <h2>Test::Differences</h2>
+          <p>Uses Text::Diff to display a diff when the test fails</p>
+          <pre><code contenteditable class="fragment perl">
+eq_or_diff $got, "$line1\n$line2\n$line3\n", "testing strings";
+          </code></pre>
+
+          <pre><code contenteditable class="fragment bash">
+$ prove t/boop.t
+t/boop.t....1..1
+not ok 1 - testing strings
+#     Failed test ((eval 2) at line 14)
+#     +---+----------------+----------------+
+#     | Ln|Got             |Expected        |
+#     +---+----------------+----------------+
+#     |  1|this is line 1  |this is line 1  |
+#     *  2|this is line b  |this is line 2  *
+#     |  3|this is line 3  |this is line 3  |
+#     +---+----------------+----------------+
+# Looks like you failed 1 test of 1.
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: greenyellow">Test::Deep</li>
+            <li style="color: white">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Testing data structures</h2>
+          <pre><code contenteditable class="perl">
+my $person = make_person();
+like $person->{name},  '/^(Mr|Mrs|Miss) \w+ \w+$/', "name ok";
+like $person->{phone}, '/^0d{6}$/',                 "phone ok";
+is scalar keys %$person, 2, "number of keys";
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Testing data structures</h2>
+          <pre><code contenteditable class="perl">
+my $person = make_person();
+if (ref($person) eq "HASH")
+{
+    like $person->{name},  '/^(Mr|Mrs|Miss) \w+ \w+$/', "name ok";
+    like $person->{phone}, '/^0d{6}$/',                 "phone ok";
+    is scalar keys %$person, 2, "number of keys";
+}
+else {
+    fail "person is not a hash";
 }
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Bug fixed</h2>
-          <pre><code contenteditable>
-package Alien;
-use Moo;
-use Tentacle;
-
-has tentacles      => (is => 'lazy');
-has tentacle_count => (is => 'ro', default => sub { 5 });
-
-sub _build_tentacles { 
-  my $self = shift;
-  my @tentacles;
-
-  push @tentacles, Tentacle->new() for (1..$self->tentacle_count);
-
-  return \@tentacles;
+          <h2>Testing nested data structures</h2>
+          <pre><code contenteditable class="perl">
+my $person = make_person();
+if (ref($person) eq "HASH") {
+    like $person->{name},  '/^(Mr|Mrs|Miss) \w+ \w+$/', "name ok";
+    like $person->{phone}, '/^0d{6}$/',                 "phone ok";
+    my $cn = $person->{child_names};
+    if (ref($cn) eq "ARRAY") {
+        foreach my $child (@$cn) {
+            like($child, $name_pat);
+        }
+    }
+    else {
+        fail "child names not an array";
+    }
+}
+else {
+    fail "person not a hash";
 }
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Types</h2>
-          <ul>
-            <li class="fragment">No solution that worked with both Moo and Moose until recently</li>
-            <li class="fragment">Type::Tiny has quickly become the community favorite</li>
-            <li class="fragment">Works with Moo</li>
-            <li class="fragment">Works with Moose</li>
-            <li class="fragment">Works with Mouse</li>
-          </ul>
+          <h2>Conclusion?</h2>
+          <br>
+          <p class="fragment">Testing data structures<br>with Test::More<br>is doable</p>
+          <br>
+          <p class="fragment">Testing horrible complex nested data structures<br>with Test::More<br>is painful</p>
         </section>
 
 
         <section>
-          <h2>Type::Tiny</h2>
-          <pre><code contenteditable>
-use Types::URI -all;
-has uri => (is => 'ro', isa => Uri);
-
-use Types::Standard -all;
-has is_from_mars => (is => 'ro', isa => Bool);
-has tentacles    => (is => 'ro', isa => ArrayRef[InstanceOf["Tentacle"]]);
+          <h2>Test::Deep</h2>
+          <pre><code contenteditable class="perl">
+my $person  = make_person();
+my $name_re = re('^(Mr|Mrs|Miss) \w+ \w+$');
+cmp_deeply
+    $person,
+    {
+        name        => $name_re,
+        phone       => re('^0d{6}$'),
+        child_names => array_each($name_re),
+    },
+    "person ok";
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Building a type library</h2>
-          <pre><code contenteditable>
-package MyCompany::Types;
-use Type::Library -base;
-use Type::Utils -all;
+          <h2>Test::Deep</h2>
+          <pre><code contenteditable class="perl">
+cmp_deeply
+    \@array,
+    [$hash1, $hash2, ignore()],
+    "first 2 elements are as expected, ignoring third element";
+          </code></pre>
+        </section>
 
-BEGIN { extends "Types::Standard" };
+
+        <section>
+          <h2>Test::Deep</h2>
+          <pre><code contenteditable class="perl">
+my $expected = {
+  name        => ignore(),
+  dna         => subsetof('human', 'mutant', 'alien'),
+  is_evil     => bool(1),
+  weaknesses  => set(@weaknesses), # ignores order, duplicates
+  powers      => bag('flight', 'invisibility', 'fire'), # ignores order
+  weapons     => any( undef, array_each(isa("Weapon")) );
+  home_planet => all(
+    isa("Planet"),
+    methods(
+       number_of_moons   => any(0..100),
+       distance_to_earth => code(sub { return 1 if shift > 0 }),
+    ),
+  ),
+};
+cmp_deeply $superhero, $expected, "superhero hashref looks ok";
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: greenyellow">Test::Fatal</li>
+            <li style="color: white">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Exceptions as strings</h2>
+          <p class="fragment">Using standard Perl exception syntax</p>
+          <pre><code contenteditable class="fragment perl">
+eval { die "Something bad happened" };
+warn $@ if $@;
+          </code></pre>
+          <p class="fragment">Using Try::Tiny </p>
+          <pre><code contenteditable class="fragment perl">
+try   { die "Something bad happened" }
+catch { warn $_ };
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Exceptions as objects</h2>
+          <p class="fragment">Using standard Perl exception syntax</p>
+          <pre><code contenteditable class="fragment perl">
+eval {
+    die My::Exception->new(
+        error    => 'Something bad happened',
+        request  => $request,
+        response => $response,
+    );
+};
+warn $@->error if $@;
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+eval {
+    My::Exception->throw(
+        error    => 'Something bad happened',
+        request  => $request,
+        response => $response,
+    );
+};
+warn $@->error if $a;
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Exceptions as objects</h2>
+          <p class="fragment">Using Try::Tiny </p>
+          <pre><code contenteditable class="fragment perl">
+try {
+    die My::Exception->new(
+        error    => 'Something bad happened',
+        request  => $request,
+        response => $response,
+    );
+}
+catch { warn $@->error };
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+try {
+    My::Exception->throw(
+        error    => 'Something bad happened',
+        request  => $request,
+        response => $response,
+    );
+}
+catch { warn $@->error };
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Test::Fatal</h2>
+          <p class="fragment">The standard module for testing exceptions</p>
+          <pre><code contenteditable class="fragment perl">
+# Check the exception matches a given regex
+like
+    exception { $obj->method() },
+    qr/Something bad happened/,
+    "caught the exception I expected";
+          </code></pre>
+
+          <pre><code contenteditable class="fragment perl">
+# Check method() did not die
+is
+    exception { $obj->method() },
+    undef,
+    "method() did not die";
+          </code></pre>
+
+          <pre><code contenteditable class="fragment perl">
+# Check method() did not die
+lives_ok { $obj->method } 'expecting to live';
+          </code></pre>
+          <p class="fragment">Note: Test::Fatal is recommended over Test::Exception</p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: greenyellow">Test::Warnings</li>
+            <li style="color: white">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Test::Warnings</h2>
+          <pre><code contenteditable class="fragment perl">
+like 
+    warning { $obj->method() },
+    qr/BEEP/,
+    'got a warning from method()';
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+is_deeply
+    [ warnings { $obj->method() } ],
+    [ 
+      'INFO: BEEP!',
+      'INFO: BOOP!',
+    ],
+    'got 2 warnings from method()';
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+cmp_deeply
+    [ warnings { $obj->method() } ],
+    bag(
+        re(qr/BEEP/),
+        re(qr/BOOP/),
+    ),
+    'got 2 warnings from method()';
+          </code></pre>
+          <p class="fragment">Note: Test::Warnings is recommended over Test::Warn</p>
+        </section>
+
+
+        <section>
+          <h2>Test::Warnings</h2>
+          <pre><code contenteditable class="fragment perl">
+use Test::More;
+use Test::Warnings;
+pass 'yay!;
+done_testing;
+          </code></pre>
+          <pre><code contenteditable class="fragment perl">
+$ prove t/test.t
+ok 1 - yay!
+ok 2 - no (unexpected) warnings (via done_testing)
+1..2
+ok
+All tests successful.
+          </code></pre>
+          <p class="fragment">Note: Test::Warnings is recommended over Test::NoWarnings</p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: greenyellow">Test::Lib</li>
+            <li style="color: white">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Test::Lib</h2>
+          <p class="fragment">
+Searches upward from the calling file for a directory 't' with a 'lib' directory
+inside it and adds that to the module search path (@INC). 
+          </p>
+          <pre><code contenteditable class="fragment perl">
+use Test::Lib;
+use t::Private::Test::Library;
+          </code></pre>
+          <p class="fragment">instead of</p>
+          <pre><code contenteditable class="fragment perl">
+use FindBin qw($Bin);
+use lib "$Bin/lib";
+use t::Private::Test::Library;
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: greenyellow">Test::Cmd</li>
+            <li style="color: white">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Test::Cmd</h2>
+          <pre><code contenteditable class="perl">
+use Test::Cmd;
+use Test::More;
  
-declare "PurpleTentacles",
-     as ArrayRef[InstanceOf["Tentacles"]],
-  where {
-            my $tentacles = $_;
-
-            for my $tentacle (@$tentacles) {
-                return 0 if $tentacle->color ne "purple";
-            }
-
-            return 1;
-        };
-
-          </code></pre>
-        </section>
-
-
-        <section>
-          <h2>How to use your type library</h2>
-          <pre><code contenteditable>
-use MyCompany::Types -all;
-has tentacles => (is => 'ro', isa => PurpleTentacles);
-          </code></pre>
-        </section>
-
-
-        <section>
-          <h2>Coercions</h2>
-          <p>Unlike Moose, coercions are separate from type checking</p>
-          <p>No solution that worked with both Moose and Moo until recently</p>
-          <pre><code contenteditable>
-package Client;
-use Moo;
-use URI;
-
-has uri => (is => 'ro', coerce => \&string_to_uri );
-
-sub string_to_uri {
-  my $value = shift;
-  return $value if ref $value eq 'URI'
-  return URI->new($value);
-}
-          </code></pre>
-          <pre><code contenteditable>
-my $client = Client->new( uri => 'http://example.com' );
-$client->uri->host;  # returns example.com
-          </code></pre>
-        </section>
-
-
-        <section>
-          <h2>Coercions with Type::Tiny</h2>
-          <p>Type::Tiny coercions come packaged with types (like in Moose)</p>
-          <pre><code contenteditable>
-package Client;
-use Moo;
-use Types::URI -all;
-
-has uri => (is => 'ro', isa => URI, coerce => 1);
-          </code></pre>
-          <pre><code contenteditable>
-my $client = Client->new( uri => 'http://example.com' );
-$client->uri->host;  # returns example.com
-          </code></pre>
-        </section>
-
-
-        <section>
-          <h2>Adding coercions<br>to your type library</h2>
-          <pre><code contenteditable>
-package MyCompany::Types;
-use Type::Library -base;
-use Type::Utils -all;
-
-BEGIN { extends "Types::Standard" };
+my $test = Test::Cmd->new( 
+    prog    => '/bin/ls',
+    workdir => ''
+);
+$test->run(args => '-l /var/log');
  
-declare "Greeting",
-     as "Str",
-  where { $_ =~ /Take me to your leader.$/ };
+is $test->stdout, $expected_stdout, 'standard out';
+is $test->stderr, $expected_stderr, 'standard error';
+is $? >> 8,       1,                'exit status';
 
-coerce "Greeting",
-  from "Str",
-   via { $_ .= '  Take me to your leader.' };
+done_testing;
+          </code></pre>
+          <p class="fragment">TIP: You can strip ansi color codes from your program's output using Term::ANSIColor::colorstrip().</p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: greenyellow">Test::DescribeMe</li>
+            <li style="color: white">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Test::DescribeMe</h2>
+          <p>Tell test runners what kind of test you are</p>
+          <pre><code contenteditable class="fragment perl">
+use Test::More;
+use Test::DescribeMe qw/extended/;
+
+pass "foo";
+
+done_testing;
+          </code></pre>
+          <pre><code contenteditable class="fragment bash">
+$ prove t/test.t
+
+1..0 # SKIP Not running extended tests
+skipped: Not running extended tests
+
+          </code></pre>
+          <pre><code contenteditable class="fragment bash">
+$ EXTENDED_TESTING=1 prove xt/reallyslow.t 
+xt/reallyslow.t .. 
+ok 1 - very very slow test
+1..1
+ok
+All tests successful.
+Files=1, Tests=1,  0 wallclock secs ( 0.01 usr  0.00 sys +  0.03 cusr  0.00 csys =  0.04 CPU)
+Result: PASS
+          </code></pre>
+          <p class="fragment">See also 
+            <a href="https://metacpan.org/pod/Test::Settings">Test::Settings</a>
+            and the 
+            <a href="https://github.com/Perl-Toolchain-Gang/toolchain-site/blob/master/lancaster-consensus.md#environment-variables-for-testing-contexts">Lancaster Consensus</a>
+          </p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: greenyellow">Plack::Test</li>
+            <li style="color: white">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Plack::Test</h2>
+          <p class="fragment">Web servers are event driven.</p>
+          <p class="fragment">Event driven code looks weird.</p>
+          <p class="fragment">The traditional Plack::Test UI is weird.</p>
+          <p class="fragment">When a request happens, a code reference (aka callback) gets run.</p>
+        </section>
+
+
+        <section>
+          <h2>Plack::Test</h2>
+          <p>The traditional Plack::Test UI (widely used)</p>
+          <pre><code contenteditable class="perl">
+use Plack::Test;
+
+test_psgi
+    app    => My::WebApp->app,
+    client => sub {
+        # $cb is a callback (aka code reference)
+        my $cb  = shift;  
+        my $req = HTTP::Request->new(GET => "http://localhost/hello");
+        my $res = $cb->($req);
+        like $res->content, qr/Hello World/;
+    };
+          </code></pre>
+          <p class="fragment">$cb is a wrapper around the PSGI app which does the following:</p>
+          <ol>
+              <li class="fragment">Creates a PSGI env hash out of the HTTP::Request object</li>
+              <li class="fragment">Runs the PSGI application in-process -- No forking! No network calls!</li>
+              <li class="fragment">Returns an HTTP::Response</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Plack::Test</h2>
+          <p>Alternate UI for Plack::Test (less common)</p>
+          <pre><code contenteditable class="perl">
+use Plack::Test;
+use HTTP::Request::Common;
+
+my $app  = My::WebApp->app;
+my $test = Plack::Test->create($app);
+
+my $res = $test->request(GET "/");
+like $res->content, qr/Hello World/;
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Type::Tiny has many features</h2>
-          <p>Too many for me to cover here.  See also:</p>
+          <h2>Plack::Test</h2>
+          <p class="fragment">No forking.</p>
+          <p class="fragment">No network calls.</p>
+          <p class="fragment">Makes things very fast and light.</p>
+        </section>
+
+
+        <section>
+          <h2>Plack::Test</h2>
+          <p>But if you want forking and network calls there are 2 options for you:</p>
           <ul>
-            <li class=fragment><a href=https://metacpan.org/pod/Type::Tiny::Manual::UsingWithMoo>Type::Tiny::Manual::UsingWithMoo</a></li>
-            <li class=fragment><a href=https://metacpan.org/pod/Types::Standard>Types::Standard</a></li>
-            <li class=fragment><a href=https://metacpan.org/pod/Type::Tiny::Manual::Utils>Type::Tiny::Manual::Utils</a></li>
-            <li class=fragment><a href=https://metacpan.org/pod/Type::Tiny::Manual::Libraries>Type::Tiny::Manual::Libraries</a></li>
-            <li class=fragment><a href=https://metacpan.org/pod/Type::Tiny::Manual::Coercions>Type::Tiny::Manual::Coercions</a></li>
-            <li class=fragment><a href=https://metacpan.org/search?q=Types>Search for Types on MetaCPAN</a></li>
+            <li class="fragment">It can fork and run a server in another process</li>
+            <li class="fragment">It can send your request to an external web server</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>Delegation</h2>
-          <pre><code contenteditable>
-package ConfigFile;
-use Moo;
-use Path::Class;
-
-has _file => (
-  is      => 'ro', 
-  handles => [qw/spew slurp/],
-  default => sub { Path::Class::file('.configuration') },
-);
-          </code></pre>
-          <pre><code contenteditable>
-my $config_file = ConfigFile->new();
-$config_file->slurp(); # read in file contents
-          </code></pre>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: green">Plack::Test</li>
+            <li style="color: greenyellow">Devel::Cover</li>
+            <li style="color: white">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
         </section>
 
 
         <section>
-          <h2>Delegation</h2>
-          <pre><code contenteditable>
-package ConfigFile;
-use Moo;
-use Path::Class;
-
-has _file => (
-  is      => 'ro', 
-  handles => { write => 'spew', read => 'slurp'},
-  default => sub { Path::Class::file('.configuration') },
-);
-          </code></pre>
-          <pre><code contenteditable>
-my $config_file = ConfigFile->new();
-$config_file->read(); # slurp in file contents
-          </code></pre>
+          <h2>Devel::Cover</h2>
+          <p>Generate reports about test coverage</p>
         </section>
 
 
         <section>
-          <h2>Triggers</h2>
-          <p>A code reference run after an attribute is set</p>
-          <pre><code contenteditable>
-has cowboy => (
-  is      => 'ro', 
-  trigger => sub { warn "cowboy attr set"; }
-);
-          </code></pre>
+          <h2>Devel::Cover</h2>
+          <ol>
+            <li class="fragment">Generate data files in ./cover_db</li>
+                <pre><code contenteditable class="fragment bash">
+$ HARNESS_PERL_SWITCHES=-MDevel::Cover prove -lvr
+                </code></pre>
+            <li class="fragment">Generate an html report in ./cover_db/coverage.html</li>
+                <pre><code contenteditable class="fragment bash">
+$ cover
+                </code></pre>
+            <li class="fragment">View the report.  It looks like <a href="src/cover_db/coverage.html">this</a></li>
+        </ol>
         </section>
 
 
         <section>
-          <h2>Method modifiers: before</h2>
-          <pre><code contenteditable>
-package Brontosaurus;
-use Moo;
-extends 'Dinosaur';
-
-before eat => sub {
-  my ($self, $food) = @_;
-
-  die "bad params" if $food eq 'meat';
-};
-          </code></pre>
-          <p class="fragment">Receives same params as the original method</p>
-          <p class="fragment">Return value is ignored</p>
-          <p class="fragment">Good for adding extra validation</p>
-        </section>
-
-
-        <section>
-          <h2>Method modifiers: after</h2>
-          <pre><code contenteditable>
-package Brontosaurus;
-use Moo;
-extends 'Dinosaur';
-
-after eat => sub {
-  my ($self, $food) = @_;
-
-  $self->log->warning("Brontosaurus does not like to eat $food")
-    if $food eq 'meat';
-};
-          </code></pre>
-          <p class="fragment">Receives same params as the original method</p>
-          <p class="fragment">Return value is ignored</p>
-          <p class="fragment">Good for logging/debugging</p>
-        </section>
-
-
-        <section>
-          <h2>Method modifiers: around</h2>
-          <pre><code contenteditable>
-package Brontosaurus;
-extends 'Dinosaur';
-
-around eat => sub {
-  my ($orig, $self, $food) = @_;
-  uc $orig->($self, $food);
-};
-          </code></pre>
-          <p class="fragment">Called instead of the original method</p>
-        </section>
-
-
-        <section>
-          <h2>Roles</h2>
+          <h2>Devel::Cover</h2>
+          <p>The report tells you the coverage of each of the <br>following categories as a percentage.</p>
           <ul>
-            <li class="fragment">Similar to Ruby mixins or Java interfaces</li>
-            <li class="fragment">Can have attributes, methods, and do other roles</li>
-            <li class="fragment">Roles add behavior and/or state to a class</li>
+              <li class="fragment"><b style="color:greenyellow">stmt:</b> % of statements (lines of code) which were hit by tests</li>
+              <li class="fragment"><b style="color:greenyellow">bran:</b> % of branches, eg if/else blocks</li>
+              <li class="fragment"><b style="color:greenyellow">cond:</b> % of conditionals, eg $x && $y || $z<br>(useful due to short circuiting)</li>
+              <li class="fragment"><b style="color:greenyellow">sub:</b>  % of subroutines which were hit by tests</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>Roles example</h2>
-          <pre><code contenteditable>
-package Searchable;
-use Moo::Role;
-
-# state
-has 'number_of_results' => (is => 'ro', default => sub { 5 }); 
-
-# behavior
-sub search { ... }
-          </code></pre>
-          <pre><code contenteditable>
-package Thing;
-use Moo;
-with qw/Searchable/;
-          </code></pre>
-          <pre><code contenteditable>
-my $thing = Thing->new();
-$thing->search();
-          </code></pre>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: green">Plack::Test</li>
+            <li style="color: green">Devel::Cover</li>
+            <li style="color: greenyellow">Test::Most</li>
+            <li style="color: white">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
         </section>
 
 
         <section>
-          <h2>Roles Terminology</h2>
+          <h2>Test::Most</h2>
+          <p>you can type this</p>
+          <pre><code contenteditable class="perl">
+use strict;
+use warnings;
+use Test::More;
+use Test::Exception;
+use Test::Differences;
+use Test::Deep;
+use Test::Warn;
+          </code></pre>
+
+          <p>or you can type this</p>
+
+          <pre><code contenteditable class="perl">
+use Test::Most;
+          </code></pre>
+
+          <p class="fragment">but</p>
           <ul>
-            <li class="fragment">Classes <i>do</i> or <i>consume</i> roles</li>
-            <li class="fragment">Roles are <i>composed</i> into classes</li>
+            <li class="fragment">Test::Fatal is recommended over Test::Exception</li>
+            <li class="fragment">Test::Warnings is recommended over Test::Warn</li>
           </ul>
         </section>
 
 
         <section>
-          <h2>requires</h2>
-          <pre><code contenteditable>
-package Searchable;
-use Moo::Role;
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: green">Plack::Test</li>
+            <li style="color: green">Devel::Cover</li>
+            <li style="color: green">Test::Most</li>
+            <li style="color: greenyellow">Test::Modern</li>
+            <li style="color: white">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
 
-requires 'search_engine';
 
-sub search { 
-  my ($self, $query) = @_;
-  my $json = $self->search_engine->search($query);
-  return JSON->new->utf8->decode($json);
-}
+        <section>
+          <h2>Test::Modern</h2>
+          <p>you can type this</p>
+          <pre><code contenteditable class="perl">
+use strict;
+use warnings;
+use Test::More;
+use Test::Fatal;
+use Test::Warnings;
+use Test::API;
+use Test::LongString;
+use Test::Deep;
+use Test::Pod;
+use Test::Pod::Coverage;
+use Test::Version;
+use Test::Moose;
+use Test::CleanNamespace;
+use Test::Benchmark;
+use Test::Requires;
+use Test::RequiresInternet;
+use Test::Without::Module;
+use Test::DescribeMe;
+use Test::Lib;
           </code></pre>
-          <pre><code contenteditable>
-package Thing;
-use Moo;
-with qw/Searchable/;
 
-sub search_engine {
-  return Bing->new();
-}
+          <p>or you can type this (well its roughly equivalent)</p>
+
+          <pre><code contenteditable class="perl">
+use Test::Modern;
+          </code></pre>
+
+          <p class="fragment">but</p>
+          <p class="fragment">Test::Modern doesn't work with Test::Pretty</p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: green">Plack::Test</li>
+            <li style="color: green">Devel::Cover</li>
+            <li style="color: green">Test::Most</li>
+            <li style="color: green">Test::Modern</li>
+            <li style="color: greenyellow">Test::Pretty</li>
+            <li style="color: white">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Without Test::Pretty</h2>
+          <pre><code contenteditable class="perl">
+~/code/text-vcard ⚡ prove t/vcard.t                                                                                                                                                                                                            
+t/vcard.t .. 
+    # Subtest: output methods
+    ok 1 - as_string()
+    ok 2 - as_file()
+    ok 3 - file contents ok
+    1..3
+ok 1 - output methods
+    # Subtest: simple getters
+    ok 1 - full_name
+    ok 2 - title
+    ok 3 - photo
+    ok 4 - birthday
+    ok 5 - timezone
+    ok 6 - version
+    1..6
+ok 2 - simple getters
+    # Subtest: photo
+    ok 1 - returns a URI::http object
+    ok 2 - returns a URI::http object
+    ok 3 - photo
+    1..3
+ok 3 - photo
+    # Subtest: complex getters
+    ok 1 - family_names()
+    ok 2 - given_names()
+    ok 3 - prefixes
+    ok 4 - suffixes
+    ok 5 - work phone
+    ok 6 - cell phone
+    ok 7 - work address
+    ok 8 - home address
+    ok 9 - work email address
+    ok 10 - home email address
+    1..10
+ok 4 - complex getters
+1..4
+ok
+All tests successful.
+Files=1, Tests=4,  0 wallclock secs ( 0.03 usr  0.00 sys +  0.07 cusr  0.02 csys =  0.12 CPU)
+Result: PASS
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Zen of Roles</h2>
-          <ul>
-            <li class="fragment">Roles are shareable between unrelated classes</li>
-            <li class="fragment">Roles are what a class <i>does</i> not what a class <i>is</i></li>
-            <li class="fragment">Roles add <i>functionality</i>, inheritance <i>specializes</i></li>
-          </ul>
-        </section>
+          <h2>With Test::Pretty</h2>
+          <pre><code contenteditable class="perl">
+~/code/text-vcard ⚡ prove t/vcard.t                                                                                                                                                                                                            
 
+  output methods
+    ✓  as_string()
+    ✓  as_file()
+    ✓  file contents ok
+  simple getters
+    ✓  full_name
+    ✓  title
+    ✓  photo
+    ✓  birthday
+    ✓  timezone
+    ✓  version
+  photo
+    ✓  returns a URI::http object
+    ✓  returns a URI::http object
+    ✓  photo
+  complex getters
+    ✓  family_names()
+    ✓  given_names()
+    ✓  prefixes
+    ✓  suffixes
+    ✓  work phone
+    ✓  cell phone
+    ✓  work address
+    ✓  home address
+    ✓  work email address
+    ✓  home email address
 
-        <section>
-          <h2>Suggestions for naming roles</h2>
-          <ul>
-            <li>Might end in 'able'</li>
-            <ul>
-              <li>Printable</li>
-              <li>Searchable</li>
-            </ul>
-            <li>Might start with 'Has' or 'Is' or 'Can'</li>
-            <ul>
-              <li>HasEngine</li>
-              <li>IsFragile</li>
-              <li>CanBreakDance</li>
-            </ul>
-          </ul>
-        </section>
-
-
-        <section>
-          <h2>Roles vs Inheritance</h2>
-          <ul>
-            <li class="fragment">Brontosaurus <i>isa</i> Dinosaur</li>
-            <li class="fragment">Brontosaurus <i>does</i> ForagingForPlants (behavior)</li>
-            <li class="fragment">Other Dinosaurs also do the ForagingForPlants role</li>
-            <li class="fragment">Brontosaurus <i>does</i> HasLongTail (state)</li>
-          </ul>
-        </section>
-
-
-        <section>
-          <h2>Role consumption is introspectable</h2>
-          <pre><code contenteditable>
-print "hi" if Thing->does('Searchable');
+ok
           </code></pre>
         </section>
 
 
         <section>
-          <h2>Moo roles vs Moose roles</h2>
+          <h2>How to use Test::Pretty</h2>
+          <p>Type this on the command line</p>
+          <pre><code contenteditable class="perl">
+prove -Pretty t
+          </code></pre>
+          <p>Or save some typing by adding this to your ~/.proverc</p>
+          <pre><code contenteditable class="perl">
+-Pretty
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: green">Plack::Test</li>
+            <li style="color: green">Devel::Cover</li>
+            <li style="color: green">Test::Most</li>
+            <li style="color: green">Test::Modern</li>
+            <li style="color: green">Test::Pretty</li>
+            <li style="color: greenyellow">Other test modules</li>
+          </ol>
+        </section>
+
+
+        <section>
+          <h2>Other test modules</h2>
           <ul>
-            <li class="fragment">In Moose you can apply roles to objects dynamically</li>
-            <li class="fragment">In Moo you can't</li>
+            <li class="fragment">Test::Fixme</li>
+            <li class="fragment">Test::NoTabs</li>
+            <li class="fragment">Test::Version</li>
+            <li class="fragment">Test::Synopsis</li>
+            <li class="fragment">Test::Vars</li>
+            <li class="fragment">Test::LoadAllModules</li>
           </ul>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+          <ol>
+            <li style="color: green">Prove</li>
+            <li style="color: green">Test directory layout</li>
+            <li style="color: green">Test::More</li>
+            <li style="color: green">TAP</li>
+            <li style="color: green">Test::Differences</li>
+            <li style="color: green">Test::Deep</li>
+            <li style="color: green">Test::Fatal</li>
+            <li style="color: green">Test::Warnings</li>
+            <li style="color: green">Test::Lib</li>
+            <li style="color: green">Test::Cmd</li>
+            <li style="color: green">Test::DescribeMe</li>
+            <li style="color: green">Plack::Test</li>
+            <li style="color: green">Devel::Cover</li>
+            <li style="color: green">Test::Most</li>
+            <li style="color: green">Test::Modern</li>
+            <li style="color: green">Test::Pretty</li>
+            <li style="color: green">Other test modules</li>
+          </ol>
         </section>
 
 
@@ -719,23 +1388,39 @@ print "hi" if Thing->does('Searchable');
 
 
         <section>
-          <h2>See also</h2>
+          <h2>These slides are online at</h2>
           <ul>
-            <li>Dave Rolsky's <a href="http://www.houseabsolute.com/presentations/intro-moose-class/index.html">Intro to Moose talk</a> (slides)</li> from which this talk takes a great deal of inspiration
-            <li>Matt Trout's <a href="https://www.youtube.com/watch?v=MzTWTLaUZrg">Moo presentation</a> (video) for Mongueuers de Perl</li>
-            <li>Matt Trout's <a href="https://www.youtube.com/watch?v=GzyvPqkNKYY">Moo guts presentation</a> (video) at YAPC NA</li>
-            <li>Michael Hick's <a href="http://www.pl-enthusiast.net/2014/08/05/type-safety/">What is type safety?</a></li>
-            <li>#moose on irc.perl.org</li>
+            <li><a href="http://kablamo.org/slides-testing-in-perl">kablamo.org/slides-testing-in-perl</a></li>
+            <li><a href="https://github.com/kablamo/slides-testing-in-perl">github.com/kablamo/slides-testing-in-perl</a></li>
           </ul>
         </section>
 
 
         <section>
-          <h2>Find these slides online at</h2>
-          <ul>
-            <li><a href="http://kablamo.org/slides-intro-to-moo">kablamo.org/slides-intro-to-moo</a></li>
-            <li><a href="https://github.com/kablamo/slides-intro-to-moo">github.com/kablamo/slides-intro-to-moo</a></li>
-          </ul>
+          <h2>Test::Exception</h2>
+          <p class="fragment">The standard module for testing exceptions for years</p>
+          <p class="fragment">Use Test::Fatal instead!</p>
+          <pre><code contenteditable class="fragment perl">
+# Check that the stringified exception matches given regex
+throws_ok { $obj->method } qr/division by zero/, 'caught exception';
+          </code></pre>
+
+          <pre><code contenteditable class="fragment perl">
+# Check an exception of the given class (or subclass) is thrown
+throws_ok { $obj->method } 'Error::Simple', 'simple error thrown';
+like $@->error, qr/division by zero/;
+          </code></pre>
+
+          <pre><code contenteditable class="fragment perl">
+# Check method() died -- we do not care why
+# dies_ok() is for lazy people; throws_ok() is best practice
+dies_ok { $obj->method } 'died as expected';
+          </code></pre>
+
+          <pre><code contenteditable class="fragment perl">
+# Check method() did not die
+lives_ok { $obj->method } 'lived as expected';
+          </code></pre>
         </section>
 
 
