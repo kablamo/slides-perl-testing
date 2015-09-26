@@ -271,15 +271,10 @@ done_testing;
           <pre><code contenteditable class="fragment perl">
 $ prove t/tiger.t
 t/tiger.t .. 
-ok 1 - created a tiger
-ok 2 - tiger has sharp teeth
-ok 3 - tiger has stripes
-ok 4 # skip third party tests
-ok 5 # skip third party tests
-ok 6 # skip third party tests
-1..6
-ok
-All tests successful.
+1..0 # SKIP third party tests
+skipped: third party tests
+Files=1, Tests=0,  0 wallclock secs ( 0.01 usr  0.01 sys +  0.04 cusr  0.00 csys =  0.06 CPU)
+Result: NOTESTS
           </code></pre>
         </section>
 
